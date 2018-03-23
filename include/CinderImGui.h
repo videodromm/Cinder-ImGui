@@ -62,7 +62,6 @@ ImVec4(const ci::Color& f) { x = f.r; y = f.g; z = f.b; w = 1.0f; }     \
 operator ci::Color() const { return ci::Color(x,y,z); }
 #endif
 
-#include "CinderImGuiExports.h"
 #include "imgui.h"
 
 #ifndef CINDER_IMGUI_NO_NAMESPACE_ALIAS
@@ -72,7 +71,7 @@ namespace ui = ImGui;
 //! cinder imgui namespace
 namespace ImGui {
 	
-	struct IMGUI_API Options {
+	struct Options {
 		//! defaults to using the current window, the basic ImGui font and the dark theme
 		Options();
 		
@@ -89,7 +88,7 @@ namespace ImGui {
 		Options& fontGlyphRanges( const std::string &name, const std::vector<ImWchar> &glyphRanges );
         //! sets global font scale
         Options& fontGlobalScale( float scale );
-
+		
 		//! Global alpha applies to everything in ImGui
 		Options& alpha( float a );
 		//! Padding within a window
@@ -101,7 +100,7 @@ namespace ImGui {
 		//! Alignment for title bar text
 		Options& windowTitleAlign( const glm::vec2 &align );
 		//! Radius of child window corners rounding. Set to 0.0f to have rectangular windows
-		Options& childRounding( float rounding );
+		Options& childWindowRounding( float rounding );
 		//! Padding within a framed rectangle (used by most widgets)
 		Options& framePadding( const glm::vec2 &padding );
 		//! Radius of frame corners rounding. Set to 0.0f to have rectangular frame (used by most widgets).
@@ -124,8 +123,6 @@ namespace ImGui {
 		Options& grabMinSize( float minSize );
 		//! Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
 		Options& grabRounding( float rounding );
-		//! Alignment of button text when button is larger than text. Defaults to (0.5f,0.5f) for horizontally+vertically centered.
-		Options& buttonTextAlign( const ci::vec2 &textAlign );            
 		//! Window positions are clamped to be visible within the display area by at least this amount. Only covers regular windows.
 		Options& displayWindowPadding( const glm::vec2 &padding );
 		//! If you cannot see the edge of your screen (e.g. on a TV) increase the safe area padding. Covers popups/tooltips as well regular windows.
@@ -133,7 +130,7 @@ namespace ImGui {
 		//! Enable anti-aliasing on lines/borders. Disable if you are really tight on CPU/GPU.
 		Options& antiAliasedLines( bool antiAliasing );
 		//! Enable anti-aliasing on filled shapes (rounded rectangles, circles, etc.)
-		Options& antiAliasedFill( bool antiAliasing );
+		Options& antiAliasedShapes( bool antiAliasing );
 		//! Tessellation tolerance. Decrease for highly tessellated curves (higher quality, more polygons), increase to reduce quality.
 		Options& curveTessellationTol( float tessTolerance );
 		
@@ -173,27 +170,30 @@ namespace ImGui {
 	};
 	
 	//! initializes ImGui and the Renderer
-	IMGUI_API void    initialize( const Options &options = Options() );
+	void    initialize( const Options &options = Options() );
 	//! connects window signals to imgui events
-	IMGUI_API void    connectWindow( ci::app::WindowRef window );
+	void    connectWindow( ci::app::WindowRef window );
 	//! disconnects window signals from imgui
-	IMGUI_API void    disconnectWindow( ci::app::WindowRef window );
+	void    disconnectWindow( ci::app::WindowRef window );
 	
 	// Cinder Helpers
-	IMGUI_API void Image( const ci::gl::Texture2dRef &texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0,1), const ImVec2& uv1 = ImVec2(1,0), const ImVec4& tint_col = ImVec4(1,1,1,1), const ImVec4& border_col = ImVec4(0,0,0,0) );
-	IMGUI_API bool ImageButton( const ci::gl::Texture2dRef &texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0,1),  const ImVec2& uv1 = ImVec2(1,0), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0,0,0,1), const ImVec4& tint_col = ImVec4(1,1,1,1) );
-	IMGUI_API void PushFont( const std::string& name = "" );
+	void Image( const ci::gl::Texture2dRef &texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0,1), const ImVec2& uv1 = ImVec2(1,0), const ImVec4& tint_col = ImVec4(1,1,1,1), const ImVec4& border_col = ImVec4(0,0,0,0) );
+	bool ImageButton( const ci::gl::Texture2dRef &texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0,1),  const ImVec2& uv1 = ImVec2(1,0), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0,0,0,1), const ImVec4& tint_col = ImVec4(1,1,1,1) );
+	void PushFont( const std::string& name = "" );
 	
 	// Std Helpers
-	IMGUI_API bool ListBox( const char* label, int* current_item, const std::vector<std::string>& items, int height_in_items = -1);
-	IMGUI_API bool InputText( const char* label, std::string* buf, ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
-	IMGUI_API bool InputTextMultiline( const char* label, std::string* buf, const ImVec2& size = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
+	bool ListBox( const char* label, int* current_item, const std::vector<std::string>& items, int height_in_items = -1);
+	bool InputText( const char* label, std::string* buf, ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
+	bool InputTextMultiline( const char* label, std::string* buf, const ImVec2& size = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
+	bool Combo( const char* label, int* current_item, const std::vector<std::string>& items, int height_in_items = -1);
 	
 	// Getters/Setters Helpers
 	template<typename T>
 	bool InputText( const char* label, T *object, std::string( T::*get )() const, void( T::*set )( const std::string& ), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL );
 	template<typename T>
 	bool Checkbox(const char* label, T *object, bool( T::*get )() const, void( T::*set )( bool ) );
+	template<typename T>
+	bool Combo( const char* label, T *object, int( T::*get )() const, void( T::*set )( int ), const std::vector<std::string>& items, int height_in_items = -1);
 	template<typename T>
 	bool DragFloat(const char* label, T *object, float( T::*get )() const, void( T::*set )( float ), float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* display_format = "%.3f", float power = 1.0f);     // If v_min >= v_max we have no bound
 	template<typename T>
@@ -217,53 +217,54 @@ namespace ImGui {
 
 	// Scoped objects goodness (push the state when created and pop it when destroyed)
 
-	struct IMGUI_API ScopedWindow : public ci::Noncopyable {
+	struct ScopedWindow : public ci::Noncopyable {
 		ScopedWindow( const std::string &name = "Debug", ImGuiWindowFlags flags = 0 );
+		ScopedWindow( const std::string &name, glm::vec2 size, float fillAlpha = -1.0f, ImGuiWindowFlags flags = 0 );
 		~ScopedWindow();
 	};
-	struct IMGUI_API ScopedChild : public ci::Noncopyable {
+	struct ScopedChild : public ci::Noncopyable {
 		ScopedChild( const std::string &name, glm::vec2 size = glm::vec2(0), bool border = false, ImGuiWindowFlags extraFlags = 0 );
 		~ScopedChild();
 	};
-	struct IMGUI_API ScopedGroup : public ci::Noncopyable {
+	struct ScopedGroup : public ci::Noncopyable {
 		ScopedGroup();
 		~ScopedGroup();
 	};
-	struct IMGUI_API ScopedFont : public ci::Noncopyable {
+	struct ScopedFont : public ci::Noncopyable {
 		ScopedFont( ImFont* font );
 		ScopedFont( const std::string &name );
 		~ScopedFont();
 	};
-	struct IMGUI_API ScopedStyleColor : public ci::Noncopyable {
+	struct ScopedStyleColor : public ci::Noncopyable {
 		ScopedStyleColor( ImGuiCol idx, const ImVec4& col );
 		~ScopedStyleColor();
 	};
-	struct IMGUI_API ScopedStyleVar : public ci::Noncopyable {
+	struct ScopedStyleVar : public ci::Noncopyable {
 		ScopedStyleVar( ImGuiStyleVar idx, float val );
 		ScopedStyleVar( ImGuiStyleVar idx, const ImVec2 &val );
 		~ScopedStyleVar();
 	};
-	struct IMGUI_API ScopedItemWidth : public ci::Noncopyable {
+	struct ScopedItemWidth : public ci::Noncopyable {
 		ScopedItemWidth( float itemWidth );
 		~ScopedItemWidth();
 	};
-	struct IMGUI_API ScopedTextWrapPos : public ci::Noncopyable {
+	struct ScopedTextWrapPos : public ci::Noncopyable {
 		ScopedTextWrapPos( float wrapPosX = 0.0f );
 		~ScopedTextWrapPos();
 	};
-	struct IMGUI_API ScopedId : public ci::Noncopyable {
+	struct ScopedId : public ci::Noncopyable {
 		ScopedId( const std::string &name );
 		ScopedId( const void *ptrId );
 		ScopedId( const int intId );
 		~ScopedId();
 	};
-	struct IMGUI_API ScopedMainMenuBar : public ci::Noncopyable {
+	struct ScopedMainMenuBar : public ci::Noncopyable {
 		ScopedMainMenuBar();
 		~ScopedMainMenuBar();
 	protected:
 		bool mOpened;
 	};
-	struct IMGUI_API ScopedMenuBar : public ci::Noncopyable {
+	struct ScopedMenuBar : public ci::Noncopyable {
 		ScopedMenuBar();
 		~ScopedMenuBar();
 	protected:
@@ -275,6 +276,35 @@ namespace ImGui {
 	IMGUI_API bool FilePicker( const char* label, ci::fs::path* path, bool open = true, const ci::fs::path &initialPath = ci::fs::path(), std::vector<std::string> extensions = std::vector<std::string>() );
 	IMGUI_API bool IconButton( const char* icon, const ImVec2& size = ImVec2(0,0), bool frame = false );
 	IMGUI_API bool IconToggle( const char* iconEnabled, const char* iconDisabled, bool *enabled, const ImVec2& size = ImVec2(0,0), bool frame = false );
+	IMGUI_API bool ColorPicker3( const char* label, float col[3] );
+	IMGUI_API bool ColorPicker4( const char* label, float col[4] );
+	
+	// Context sharing utilities. Can be used to help sharing the context between host app and dlls.
+	class ContextOwner {
+		ImGuiContext* getImGuiContext() const { return mImguiContext; }
+		void setImGuiContext( ImGuiContext* context = nullptr ) { mImguiContext = context == nullptr ? ui::GetCurrentContext() : context; }
+		friend void initializeShared( const Options &options );
+		friend void shareContext();
+		ImGuiContext* mImguiContext = nullptr;
+	};
+
+	inline void initializeShared( const Options &options = Options() )
+	{
+		ui::initialize( options );
+		auto contextOwner = dynamic_cast<ContextOwner*>( ci::app::App::get() );
+		CI_ASSERT_MSG( contextOwner, "App has to inherit from ui::ContextOwner to use ui::initializeShared" );
+		contextOwner->setImGuiContext();
+	}
+
+	inline void shareContext()
+	{
+		auto contextOwner = dynamic_cast<ContextOwner*>( ci::app::App::get() );
+		CI_ASSERT_MSG( contextOwner, "App has to inherit from ui::ContextOwner to use ui::shareContext" );
+		ImGuiContext* ctx = contextOwner->getImGuiContext();
+		if( ctx != ui::GetCurrentContext() ) {
+			ui::SetCurrentContext( ctx );
+		}
+	}
 
 	// Dock From LumixEngine
 	// https://github.com/nem0/LumixEngine/blob/master/external/imgui/imgui_dock.h
@@ -304,6 +334,16 @@ namespace ImGui {
 	{
 		bool value = (object->*get)();
 		if( Checkbox( label, &value ) ){
+			(object->*set)( value );
+			return true;
+		}
+		return false;
+	}
+	template<typename T>
+	bool Combo( const char* label, T *object, int( T::*get )() const, void( T::*set )( int ), const std::vector<std::string>& items, int height_in_items )
+	{
+		int value = (object->*get)();
+		if( Combo( label, &value, items, height_in_items ) ){
 			(object->*set)( value );
 			return true;
 		}

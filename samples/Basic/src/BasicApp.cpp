@@ -52,7 +52,7 @@ void BasicApp::mouseDown( MouseEvent event )
 
 void BasicApp::update()
 {
-	static bool showDemoWindow = false;
+	static bool showTestWindow = false;
 	static bool showWindowWithMenu = false;
 	
 	// a few scoped object like ScopedWindow allow to quickly
@@ -89,15 +89,15 @@ void BasicApp::update()
 		
 		// and a view menu
 		if( ui::BeginMenu( "View" ) ){
-			ui::MenuItem( "TestWindow", nullptr, &showDemoWindow );
+			ui::MenuItem( "TestWindow", nullptr, &showTestWindow );
 			ui::MenuItem( "Window with Menu", nullptr, &showWindowWithMenu );
 			ui::EndMenu();
 		}
 	}
 	
-	if( showDemoWindow ){
+	if( showTestWindow ){
 		// have a look at this function for more examples
-		ui::ShowDemoWindow();
+		ui::ShowTestWindow();
 	}
 	
 	
@@ -110,7 +110,6 @@ void BasicApp::update()
 		if( ui::Button( "Add" ) ) {
 			static int objCount = mObjects.size();
 			mObjects.push_back( { "Object" + to_string( objCount++ ), Color::white(), vec2( 0.0f ) } );
-			selection = &mObjects.back();
 		}
 		if( selection ) {
 			ui::SameLine();
@@ -125,9 +124,8 @@ void BasicApp::update()
 		
 		// selectable list
 		ui::ListBoxHeader( "" );
-		int id = 0;
 		for( const auto& object : mObjects ) {
-			if( ui::Selectable( ( object.mName + "###obj_" + to_string( ++id ) ).c_str(), selection == &object ) ) {
+			if( ui::Selectable( object.mName.c_str(), selection == &object ) ) {
 				selection = &object;
 			}
 		}
@@ -135,7 +133,7 @@ void BasicApp::update()
 	}
 	
 	// The Object Inspector
-	if( selection != nullptr ) {
+	if( selection ) {
 		ui::ScopedWindow window( "Inspector" );
 		
 		Object* object = (Object*) selection;
